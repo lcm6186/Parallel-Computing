@@ -1,0 +1,34 @@
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-unet-train-lcmhng-0
+spec:
+  template:
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: pod-unet-train-lcmhng-0
+        image: gitlab-registry.nrp-nautilus.io/aomqc/umc_dsa_8430_sp2022_image:latest
+        workingDir: /lcmhng-pv
+        command: ["/bin/sh","-c"]
+        args: ["python3 U_Net_training.py 0 50; python3 U_Net_prediction.py 0; python3 U_Net_evaluation.py 0 "]
+        volumeMounts:
+        - name: lcmhng-pv
+          mountPath: /lcmhng-pv
+        resources:
+            limits:
+              memory: 20Gi
+              cpu: 1
+              nvidia.com/gpu: 1
+            requests:
+              memory: 20Gi
+              cpu: 1
+              nvidia.com/gpu: 1
+      volumes:
+      - name: lcmhng-pv 
+        persistentVolumeClaim:
+            claimName: lcmhng-pv
+      restartPolicy: OnFailure      
+  backoffLimit: 
+
